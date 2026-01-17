@@ -1335,7 +1335,7 @@ async function handleRegister() {
   }
 
   try {
-    const response = await fetch("http://localhost:3000/api/auth/register", {
+    const response = await fetch("/api/auth/register", {
       method: "POST",
 
       headers: { "Content-Type": "application/json" },
@@ -1774,7 +1774,7 @@ async function saveData() {
   };
 
   try {
-    await fetch("http://localhost:3000/api/user/data", {
+    await fetch("/api/user/data", {
       method: "PUT",
 
       headers: {
@@ -4618,7 +4618,7 @@ async function handleLogin() {
   const password = document.getElementById("loginPassword").value;
 
   try {
-    const res = await fetch("http://localhost:3000/api/auth/login", {
+    const res = await fetch("/api/auth/login", {
       method: "POST",
 
       headers: { "Content-Type": "application/json" },
@@ -5887,4 +5887,5 @@ window.onload = function () {
   showSection("cards");
   handleModeChange();
 };
+
 
