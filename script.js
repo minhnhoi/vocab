@@ -1,4 +1,4 @@
-const API_BASE_URL = "http://localhost:3000";
+const API_BASE_URL = "";
 
 let authToken = localStorage.getItem("authToken");
 
@@ -5887,3 +5887,4 @@ window.onload = function () {
   showSection("cards");
   handleModeChange();
 };
+
