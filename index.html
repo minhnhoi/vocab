@@ -1,0 +1,640 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vocab Master - Học từ vựng khoa học</title>
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <header>
+      <div class="brand" onclick="showSection('cards')">
+        <h1><i class="fas fa-brain"></i> Vocab Master</h1>
+        <p>Hệ thống học từ vựng Flashcard</p>
+      </div>
+
+      <div class="nav" role="navigation" aria-label="Main navigation">
+        <button id="nav-cards" class="active" onclick="showSection('cards')">
+          <i class="fas fa-th-large"></i> Thẻ
+        </button>
+        <button id="nav-play" onclick="showSection('play')">
+          <i class="fas fa-gamepad"></i> Chơi game
+        </button>
+        <button id="nav-shop" onclick="showSection('shop')">
+          <i class="fas fa-store"></i> Shop
+        </button>
+        <button id="nav-advanced" onclick="showSection('advanced')">
+          <i class="fas fa-cog"></i> Nâng cao
+        </button>
+        <button id="nav-vanban" onclick="showSection('vanban')">
+          <i class="fas fa-language"></i> Văn Bản
+        </button>
+        <button id="nav-music" onclick="showSection('music')">
+          <i class="fas fa-music"></i> Âm nhạc
+        </button>
+      </div>
+
+      <div class="utility-buttons">
+        <button
+          id="btn-theme-toggle"
+          onclick="toggleTheme()"
+          disabled
+          title="Chế độ tối bị khóa (Mua trong Shop)"
+        >
+          <i class="fas fa-sun" id="theme-icon"></i>
+        </button>
+        <button id="btn-auth-toggle" onclick="openAuthModal('login')">
+          <i class="fas fa-user-circle"></i> Đăng nhập / Đăng ký
+        </button>
+      </div>
+    </header>
+
+    <div class="container">
+      <div id="section-cards">
+        <div class="dashboard">
+          <div class="stat-item">
+            <i class="fas fa-layer-group" style="color: var(--primary)"></i>
+            <h3 id="stat-total-words">0</h3>
+            <p>Tổng số từ</p>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-star" style="color: var(--accent)"></i>
+            <h3 id="stat-points">0</h3>
+            <p>Điểm hiện tại</p>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-check-circle" style="color: var(--success)"></i>
+            <h3 id="stat-accuracy">--%</h3>
+            <p>Độ chính xác (Game)</p>
+          </div>
+          <div class="stat-item">
+            <i class="fas fa-history" style="color: var(--error)"></i>
+            <h3 id="stat-review-count">0</h3>
+            <p>Cần ôn tập</p>
+          </div>
+          <div class="stat-item" id="levelStatItem">
+            <p>Cấp Độ (Level)</p>
+            <div class="level-circle-container">
+              <div class="level-progress-bar" id="levelProgressBarCircle"></div>
+              <div class="level-content">
+                <h3 id="currentLevel">1</h3>
+              </div>
+            </div>
+            <p class="exp-text">
+              EXP:
+              <span id="currentExp">0</span> /
+              <span id="requiredExp">200</span>
+            </p>
+          </div>
+          <div class="stat-item timer-stat-item">
+            <p>Thời gian Học Tập Hôm nay</p>
+            <h3 id="timer-display">00:00:00</h3>
+            <p id="reset-message" class="reset-message-text"></p>
+            <div class="mock-stats">
+              <span id="exp-mock">✨ 0 Exp</span>
+              <span id="coin-mock">💰 0 Coin</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="add-box">
+          <input
+            type="text"
+            id="wordInput"
+            placeholder="Từ vựng (Ví dụ: Apple)"
+          />
+          <input
+            type="text"
+            id="meaningInput"
+            placeholder="Nghĩa / Định nghĩa"
+          />
+
+          <div id="imageInputControl">
+            <div id="urlInputContainer">
+              <input
+                type="text"
+                id="imageInput"
+                placeholder="URL Ảnh (hoặc để trống)"
+              />
+              <p class="input-toggle" onclick="toggleImageInputMode('file')">
+                Hoặc
+                <span
+                  style="
+                    color: var(--primary);
+                    font-weight: 600;
+                    cursor: pointer;
+                  "
+                  >Tải ảnh từ máy tính</span
+                >
+                <i class="fas fa-arrow-right"></i>
+              </p>
+            </div>
+            <div id="fileInputContainer" class="hidden">
+              <input
+                type="file"
+                id="imageFileInput"
+                accept="image/*"
+                title="Chọn file ảnh từ máy tính"
+              />
+              <p class="input-toggle" onclick="toggleImageInputMode('url')">
+                <i class="fas fa-arrow-left"></i>
+                <span
+                  style="
+                    color: var(--primary);
+                    font-weight: 600;
+                    cursor: pointer;
+                  "
+                  >Sử dụng URL ảnh</span
+                >
+              </p>
+            </div>
+          </div>
+          <button class="btn-add" onclick="addCard()">Thêm Thẻ</button>
+        </div>
+
+        <div class="grid-cards" id="cardList"></div>
+      </div>
+
+      <div id="section-play" class="hidden">
+        <div class="play-section">
+          <h2><i class="fas fa-gamepad"></i> Chơi Game</h2>
+
+          <div
+            style="
+              margin: 15px 0;
+              display: flex;
+              gap: 10px;
+              flex-wrap: wrap;
+              align-items: center;
+            "
+          >
+            <label for="gameMode" style="font-weight: 600">Chọn Chế độ:</label>
+            <select
+              id="gameMode"
+              style="padding: 8px; border-radius: 8px; border: 1px solid #ccc"
+              onchange="handleModeChange()"
+            >
+              <option value="wordToMeaning">1. Từ vựng → Nghĩa (Gõ)</option>
+              <option value="meaningToWord">2. Nghĩa → Từ vựng (Gõ)</option>
+              <option value="multipleChoice">3. Trắc nghiệm (Chọn)</option>
+              <option value="jumbleWord">4. Sắp xếp Từ (Jumble)</option>
+              <option value="matchingGame">5. Lật Thẻ Trùng (Matching)</option>
+            </select>
+            <button
+              class="btn-add"
+              onclick="startGame()"
+              style="padding: 8px 15px"
+            >
+              <span id="startGameButtonText">Bắt đầu Lượt mới</span>
+            </button>
+            <button
+              class="btn-add"
+              onclick="startReview()"
+              style="background: var(--error); padding: 8px 15px"
+            >
+              Ôn tập (<span id="reviewCountBtn">0</span>)
+            </button>
+          </div>
+
+          <p id="play-info" style="margin-bottom: 10px; opacity: 0.8">
+            Chọn chế độ và Bấm "Bắt đầu" để chơi.
+          </p>
+
+          <div id="matchingGameArea"></div>
+
+          <div id="playCardContainer">
+            <h3 id="playWord" style="font-size: 2rem; color: #fd00ec">—</h3>
+            <img
+              id="playImage"
+              src=""
+              alt=""
+              style="
+                max-width: 150px;
+                max-height: 150px;
+                border-radius: 12px;
+                margin: 10px auto;
+                display: none;
+              "
+            />
+            <p
+              id="playSentence"
+              style="font-style: italic; opacity: 0.8; margin-top: 5px"
+            ></p>
+            <p
+              id="gamePointsDisplay"
+              style="margin-top: 10px; font-weight: 600; color: var(--accent)"
+            >
+              Điểm: 0
+            </p>
+
+            <div id="textEntryArea" class="hidden" style="margin-top: 50px">
+              <input
+                type="text"
+                id="answerInput"
+                placeholder="Nhập câu trả lời của bạn (Enter)"
+                autocomplete="off"
+              />
+            </div>
+
+            <div id="multipleChoiceArea" class="force-hidden">
+              <div class="multiple-choice-options" id="mcOptions"></div>
+            </div>
+
+            <div id="jumbleWordArea" class="force-hidden">
+              <div id="jumbledAnswerDisplay"></div>
+              <div id="jumbleOptionsArea"></div>
+              <button
+                class="btn-add"
+                onclick="removeLastChar()"
+                id="btnJumbleDelete"
+                disabled
+                style="
+                  margin-top: 15px;
+                  background: var(--primary);
+                  padding: 8px 15px;
+                "
+              ></button>
+            </div>
+
+            <p
+              id="playResult"
+              class="game-result-message"
+              style="margin-top: 15px; font-weight: bold"
+            ></p>
+          </div>
+
+          <div class="play-controls" id="singleCardControls">
+            <button
+              class="btn-add"
+              onclick="checkAnswer()"
+              id="btnCheckAnswer"
+              disabled
+            >
+              Kiểm tra (Enter)
+            </button>
+            <button
+              class="btn-add"
+              onclick="nextPlayCard()"
+              id="btnNextCard"
+              disabled
+              style="background: var(--success)"
+            >
+              Tiếp theo
+            </button>
+            <button
+              class="btn-add"
+              onclick="getHint()"
+              id="btnGetHint"
+              style="background: var(--accent)"
+              disabled
+            >
+              Gợi ý (-5 Điểm)
+            </button>
+          </div>
+          <div id="inventory-bar">
+            <p
+              id="inventory-placeholder"
+              style="
+                color: var(--text);
+                opacity: 0.6;
+                font-style: italic;
+                text-align: center;
+              "
+            >
+              Bạn chưa có vật phẩm nào có thể sử dụng trong game.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div id="section-shop" class="hidden">
+        <div class="play-section">
+          <h2><i class="fas fa-store"></i> Shop (Sử dụng Điểm)</h2>
+          <p style="margin-bottom: 20px">
+            Điểm hiện tại của bạn:
+            <span id="currentPoints" style="color: var(--accent)">0</span>
+          </p>
+          <div class="grid-cards" id="shopItemsList"></div>
+        </div>
+      </div>
+
+      <div id="section-advanced" class="hidden">
+        <div class="advanced-section">
+          <h2><i class="fas fa-cog"></i> DATA</h2>
+          <div
+            style="
+              margin-top: 15px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 20px;
+            "
+          >
+            <button
+              class="btn-add"
+              style="background: #e67e22; margin-top: 15px"
+              onclick="exportData()"
+            >
+              <i class="fas fa-file-export"></i> Xuất Dữ liệu (.json)
+            </button>
+            <input
+              type="file"
+              id="importFile"
+              accept=".json"
+              style="
+                margin-top: 15px;
+                grid-column: 1 / -1;
+                border: 2px dashed #ccc;
+              "
+            />
+            <button
+              class="btn-add"
+              style="background: #27ae60; margin-top: 15px"
+              onclick="importData()"
+            >
+              <i class="fas fa-file-import"></i> Nhập Dữ liệu (.json)
+            </button>
+            <button
+              class="btn-add"
+              style="background: var(--error); margin-top: 15px"
+              onclick="resetAllDataConfirmation()"
+            >
+              <i class="fas fa-trash"></i> Xóa TOÀN BỘ Dữ liệu (Nguy hiểm!)
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div id="section-vanban" class="hidden">
+        <div class="advanced-section">
+          <h2><i class="fas fa-language"></i> Song Ngữ</h2>
+
+          <div
+            style="
+              margin-top: 15px;
+              border-bottom: 1px solid #eee;
+              padding-bottom: 20px;
+            "
+          >
+            <input
+              type="text"
+              id="textEntryTitle"
+              placeholder="(Ví dụ: Bài 1 - Khoa Học)"
+            />
+            <textarea
+              id="textEntryBodyVi"
+              placeholder="Nội dung Tiêu đề"
+              style="min-height: 100px"
+            ></textarea>
+            <textarea
+              id="textEntryBodyEn"
+              placeholder="Nội dung Song Ngữ/Tiếng Anh"
+              style="min-height: 100px"
+            ></textarea>
+
+            <div id="textEntryImageInputControl">
+              <div id="textEntryUrlInputContainer">
+                <input
+                  type="text"
+                  id="textEntryImageInput"
+                  placeholder="URL Ảnh đính kèm (hoặc để trống)"
+                />
+                <p
+                  class="input-toggle"
+                  onclick="toggleTextEntryImageInputMode('file')"
+                >
+                  Hoặc
+                  <span
+                    style="
+                      color: var(--primary);
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    >Tải ảnh từ máy tính</span
+                  >
+                  <i class="fas fa-arrow-right"></i>
+                </p>
+              </div>
+              <div id="textEntryFileInputContainer" class="hidden">
+                <input
+                  type="file"
+                  id="textEntryImageFileInput"
+                  accept="image/*"
+                  title="Chọn file ảnh từ máy tính"
+                />
+                <p
+                  class="input-toggle"
+                  onclick="toggleTextEntryImageInputMode('url')"
+                >
+                  <i class="fas fa-arrow-left"></i>
+                  <span
+                    style="
+                      color: var(--primary);
+                      font-weight: 600;
+                      cursor: pointer;
+                    "
+                    >Sử dụng URL ảnh</span
+                  >
+                </p>
+              </div>
+            </div>
+
+            <button
+              class="btn-add"
+              onclick="addTextEntry()"
+              style="margin-top: 15px"
+            >
+              <i class="fas fa-plus-circle"></i> Thêm Mục Văn Bản
+            </button>
+          </div>
+
+          <div class="bilingual-list" id="bilingualList"></div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+    <div id="authModalOverlay" class="modal-overlay">
+      <div class="auth-modal" id="authModal">
+        <button class="close-button" onclick="closeAuthModal()">&times;</button>
+        <div id="loginFormContainer">
+          <h2>Đăng nhập</h2>
+          <form
+            id="loginForm"
+            class="auth-form"
+            onsubmit="
+              event.preventDefault();
+              handleLogin();
+            "
+          >
+            <input
+              type="text"
+              id="loginEmail"
+              class="auth-input"
+              placeholder="Email hoặc Tên người dùng"
+              required
+            />
+            <input
+              type="password"
+              id="loginPassword"
+              class="auth-input"
+              placeholder="Mật khẩu"
+              required
+            />
+            <button type="submit" class="btn-auth">Đăng nhập</button>
+          </form>
+          <p class="auth-toggle">
+            Chưa có tài khoản?
+            <a onclick="openAuthModal('register')">Đăng ký ngay</a>
+          </p>
+        </div>
+        <div id="registerFormContainer" class="hidden">
+          <h2>Đăng ký</h2>
+          <form
+            id="registerForm"
+            class="auth-form"
+            onsubmit="
+              event.preventDefault();
+              handleRegister();
+            "
+          >
+            <input
+              type="text"
+              id="registerUsername"
+              class="auth-input"
+              placeholder="Tên người dùng"
+              required
+            />
+            <input
+              type="email"
+              id="registerEmail"
+              class="auth-input"
+              placeholder="Email"
+              required
+            />
+            <input
+              type="password"
+              id="registerPassword"
+              class="auth-input"
+              placeholder="Mật khẩu"
+              required
+            />
+            <button type="submit" class="btn-auth">Đăng ký</button>
+          </form>
+          <p class="auth-toggle">
+            Đã có tài khoản?
+            <a onclick="openAuthModal('login')">Đăng nhập</a>
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <div id="editCardModalOverlay" class="modal-overlay">
+      <div class="auth-modal" id="editCardModal" style="max-width: 500px">
+        <button class="close-button" onclick="closeEditModal()">&times;</button>
+        <h2><i class="fas fa-edit"></i> Chỉnh Sửa Thẻ</h2>
+        <form
+          id="editCardForm"
+          class="auth-form"
+          onsubmit="
+            event.preventDefault();
+            saveEditCard();
+          "
+        >
+          <input type="hidden" id="editCardOriginalWord" />
+
+          <label for="editWordInput" style="font-weight: 600; margin-top: 10px"
+            >Từ Vựng:</label
+          >
+          <input
+            type="text"
+            id="editWordInput"
+            class="auth-input"
+            placeholder="Từ vựng (Ví dụ: Apple)"
+            required
+          />
+
+          <label for="editMeaningInput" style="font-weight: 600"
+            >Nghĩa / Định Nghĩa:</label
+          >
+          <input
+            type="text"
+            id="editMeaningInput"
+            class="auth-input"
+            placeholder="Nghĩa / Định nghĩa"
+            required
+          />
+
+          <label for="editSentenceInput" style="font-weight: 600"
+            >Câu ví dụ minh họa</label
+          >
+          <textarea
+            id="editSentenceInput"
+            class="auth-input"
+            placeholder="Câu ví dụ / Ngữ cảnh (Đặt trong ngoặc kép nếu muốn)"
+            style="min-height: 80px"
+          ></textarea>
+
+          <div id="editImageInputControl" style="margin-top: 10px">
+            <div id="editUrlInputContainer">
+              <input
+                type="text"
+                id="editImageInput"
+                class="auth-input"
+                placeholder="URL Ảnh (hoặc để trống)"
+              />
+              <p
+                class="input-toggle"
+                onclick="toggleEditImageInputMode('file')"
+              >
+                Hoặc
+                <span
+                  style="
+                    color: var(--primary);
+                    font-weight: 600;
+                    cursor: pointer;
+                  "
+                  >Tải ảnh từ máy tính</span
+                >
+                <i class="fas fa-arrow-right"></i>
+              </p>
+            </div>
+
+            <div id="editFileInputContainer" class="hidden">
+              <input
+                type="file"
+                id="editImageFileInput"
+                accept="image/*"
+                title="Chọn file ảnh từ máy tính"
+              />
+              <p
+                class="input-toggle"
+                onclick="toggleEditImageInputMode('url')"
+                style="text-align: left"
+              >
+                <i class="fas fa-arrow-left"></i>
+                <span
+                  style="
+                    color: var(--primary);
+                    font-weight: 600;
+                    cursor: pointer;
+                  "
+                  >Sử dụng URL ảnh</span
+                >
+              </p>
+            </div>
+          </div>
+
+          <button type="submit" class="btn-auth" style="margin-top: 15px">
+            <i class="fas fa-save"></i> Lưu Chỉnh Sửa
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script src="script.js" defer></script>
+  </body>
+</html>
